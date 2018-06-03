@@ -2,16 +2,18 @@
 package main
 
 import (
+    "net/http"
     "fmt"
-   // "strconv"
     "path/filepath"
     "os"
-    "strings"
+    str "strings"
+    "github.com/labstack/echo"
+ //   "github.com/labstack/gommon/color"
 )
 
 type Document struct {
-    Name string
-    Location string
+    Name     string `json:"name"`
+    Location string `json:"location"`
 }
 
 type DocumentAccessor interface {
@@ -30,7 +32,7 @@ func (acc *LocalDocumentAccessor) GetDocuments(root string, filter func(string) 
         if filter(path) {
             docs = append(docs, Document {
                 Name: info.Name(),
-                Location: strings.TrimPrefix(path, root),
+                Location: filepath.ToSlash(str.TrimPrefix(path, root)),
             })
         }
 
@@ -53,7 +55,7 @@ func main() {
     docs, err :=
         j.GetDocuments(
             "C:\\Users\\Nitzanz\\Dropbox\\Projects",
-            func(f string) bool { return strings.HasSuffix(f, ".md") })
+            func(f string) bool { return str.HasSuffix(str.ToLower(f), ".md") })
 
     if err != nil {
         
@@ -63,6 +65,15 @@ func main() {
         return
     }
 
-    fmt.Println("hello, world")
-    fmt.Println(docs)
+    for _, doc := range *docs {
+        fmt.Printf("%v\n", doc)
+    }
+
+    e := echo.New()
+
+    e.GET("/", func(c echo.Context) error {
+        return c.JSON(http.StatusOK, docs)
+    })
+
+    e.Logger.Fatal(e.Start(":1323"))
 }
