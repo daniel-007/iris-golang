@@ -8,7 +8,6 @@ import (
     "os"
     str "strings"
     "github.com/labstack/echo"
- //   "github.com/labstack/gommon/color"
 )
 
 type Document struct {
@@ -71,9 +70,13 @@ func main() {
 
     e := echo.New()
 
-    e.GET("/", func(c echo.Context) error {
+    e.GET("/api/docs", func(c echo.Context) error {
         return c.JSON(http.StatusOK, docs)
     })
+
+    e.File("/", "static/view/index.htm")
+
+    e.Static("/static", "static")
 
     e.Logger.Fatal(e.Start(":1323"))
 }
